@@ -6,10 +6,8 @@ class Solution {
         for(int i=1;i<prices.length;i++){
             if((prices[i]==prices[i-1]-1) && continuous==true){
                 ans+=2;
-                if(prev!=i-1){
-                    int len=i-prev+1;
-                    ans+=(len-3);
-                }
+                int len=i-prev+1;
+                ans+=(len-3);
             }else if(prices[i]==prices[i-1]-1){
                 ans+=1;
                 continuous=true;
