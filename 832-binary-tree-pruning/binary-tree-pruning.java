@@ -15,29 +15,12 @@
  */
 class Solution {
     public TreeNode pruneTree(TreeNode root) {
-        if(root==null){
-            return null;
-        }
-        if(!isOnepresent(root.left)){
-            root.left=null;
-        }
-        if(!isOnepresent(root.right)){
-            root.right=null;
-        }
-        pruneTree(root.left);
-        pruneTree(root.right);
-        if(root.right==null && root.left==null && root.val==0){
+        if(root==null) return null;
+        root.left=pruneTree(root.left);
+        root.right=pruneTree(root.right);
+        if(root.left==null && root.right==null && root.val==0){
             return null;
         }
         return root;
-    }
-    public boolean isOnepresent(TreeNode root){
-        if(root==null){
-            return false;
-        }
-        if(root.val==1){
-            return true;
-        }
-        return isOnepresent(root.left) || isOnepresent(root.right);
     }
 }
