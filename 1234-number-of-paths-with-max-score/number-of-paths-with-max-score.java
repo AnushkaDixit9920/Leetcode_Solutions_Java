@@ -1,59 +1,53 @@
+import java.util.*;
 
-public class Solution {
+class Solution {
     public int[] pathsWithMaxScore(List<String> board) {
         int n = board.size();
-        int MOD = 1_000_000_007;
-        int[][] dpSum = new int[n][n];
-        int[][] dpCount = new int[n][n];
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                dpSum[i][j] = -1;
-            }
-        }
-        dpSum[n - 1][n - 1] = 0;
-        dpCount[n - 1][n - 1] = 1;
-        int[][] dirs = {{1, 0}, {0, 1}, {1, 1}};
- 
+        final long MOD = 1_000_000_007L;
+        
+        char[][] b = new char[n][n];
+        for (int i = 0; i < n; i++) b[i] = board.get(i).toCharArray();
+        
+        int[][] dp = new int[n][n];      // max sum achievable from (i,j) to S... actually from S to (i,j)
+        long[][] cnt = new long[n][n];   // number of ways to achieve that max
+        for (int[] row : dp) Arrays.fill(row, -1); // -1 = unreachable
+        
+        dp[n-1][n-1] = 0;   // S itself contributes 0
+        cnt[n-1][n-1] = 1;
+        
+        int[] di = {1, 0, 1};   // down, right, down-right (i.e., the cells that can reach (i,j))
+        int[] dj = {0, 1, 1};
+        
+        // Process cells so that (i+1,j), (i,j+1), (i+1,j+1) are ready before (i,j).
         for (int i = n - 1; i >= 0; i--) {
             for (int j = n - 1; j >= 0; j--) {
+                if ((i == n-1 && j == n-1)) continue; // S already set
+                if (b[i][j] == 'X') continue;         // obstacle: unreachable
                 
-                if (i == n - 1 && j == n - 1) {
-                    continue;
-                }
-                if (board.get(i).charAt(j) == 'X') {
-                    continue;
-                }
+                int best = -1;
+                long ways = 0;
                 
-                int maxPrev = -1;
-                int countPrev = 0;
-                
-                for (int[] dir : dirs) {
-                    int ni = i + dir[0];
-                    int nj = j + dir[1];
-                    
-                    if (ni < n && nj < n && dpSum[ni][nj] != -1) {
-                        if (dpSum[ni][nj] > maxPrev) {
-                            maxPrev = dpSum[ni][nj];
-                            countPrev = dpCount[ni][nj];
-                        } else if (dpSum[ni][nj] == maxPrev) {
-                            countPrev = (countPrev + dpCount[ni][nj]) % MOD;
+                for (int k = 0; k < 3; k++) {
+                    int ni = i + di[k], nj = j + dj[k];
+                    if (ni < n && nj < n && dp[ni][nj] >= 0) {
+                        if (dp[ni][nj] > best) {
+                            best = dp[ni][nj];
+                            ways = cnt[ni][nj];
+                        } else if (dp[ni][nj] == best) {
+                            ways = (ways + cnt[ni][nj]) % MOD;
                         }
                     }
                 }
                 
-                if (maxPrev != -1) {
-                    char c = board.get(i).charAt(j);
-                    int currentVal = (c == 'E') ? 0 : (c - '0');
-                    dpSum[i][j] = maxPrev + currentVal;
-                    dpCount[i][j] = countPrev;
+                if (best >= 0) {
+                    int val = (b[i][j] == 'E' || b[i][j] == 'S') ? 0 : (b[i][j] - '0');
+                    dp[i][j] = best + val;
+                    cnt[i][j] = ways;
                 }
             }
         }
         
-        if (dpSum[0][0] == -1) {
-            return new int[]{0, 0};
-        }
-        
-        return new int[]{dpSum[0][0], dpCount[0][0]};
+        if (dp[0][0] < 0) return new int[]{0, 0};
+        return new int[]{dp[0][0], (int) cnt[0][0]};
     }
 }
