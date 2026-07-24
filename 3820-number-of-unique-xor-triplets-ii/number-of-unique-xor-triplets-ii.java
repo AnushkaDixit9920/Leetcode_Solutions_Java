@@ -1,50 +1,42 @@
-import java.util.BitSet;
-
-public class Solution {
-    private static final int MAX_XOR_RANGE = 2048;
-
+class Solution {
     public int uniqueXorTriplets(int[] nums) {
-        int[] uniqueNums = extractUniqueElements(nums);
-        BitSet pairwiseXors = computePairwiseXors(uniqueNums);
-        BitSet tripletXors = computeTripletXors(pairwiseXors, uniqueNums);
-        
-        return tripletXors.cardinality();
-    }
-
-    private int[] extractUniqueElements(int[] nums) {
-        BitSet seen = new BitSet(MAX_XOR_RANGE);
+        boolean[] inU = new boolean[2048];
+        int uCount = 0;
         for (int num : nums) {
-            seen.set(num);
+            if (!inU[num]) {
+                inU[num] = true;
+                uCount++;
+            }
         }
 
-        int[] uniqueNums = new int[seen.cardinality()];
+        int[] U = new int[uCount];
         int idx = 0;
-        for (int val = seen.nextSetBit(0); val >= 0; val = seen.nextSetBit(val + 1)) {
-            uniqueNums[idx++] = val;
-        }
-        return uniqueNums;
-    }
-
-    private BitSet computePairwiseXors(int[] uniqueNums) {
-        BitSet pairwiseXors = new BitSet(MAX_XOR_RANGE);
-        int n = uniqueNums.length;
-
-        for (int i = 0; i < n; i++) {
-            for (int j = i; j < n; j++) {
-                pairwiseXors.set(uniqueNums[i] ^ uniqueNums[j]);
+        for (int i = 0; i < 2048; i++) {
+            if (inU[i]) {
+                U[idx++] = i;
             }
         }
-        return pairwiseXors;
-    }
-
-    private BitSet computeTripletXors(BitSet pairwiseXors, int[] uniqueNums) {
-        BitSet tripletXors = new BitSet(MAX_XOR_RANGE);
-
-        for (int p = pairwiseXors.nextSetBit(0); p >= 0; p = pairwiseXors.nextSetBit(p + 1)) {
-            for (int w : uniqueNums) {
-                tripletXors.set(p ^ w);
+        boolean[] inP = new boolean[2048];
+        for (int i = 0; i < U.length; i++) {
+            for (int j = i; j < U.length; j++) {
+                inP[U[i] ^ U[j]] = true;
             }
         }
-        return tripletXors;
+        boolean[] inS = new boolean[2048];
+        for (int p = 0; p < 2048; p++) {
+            if (inP[p]) {
+                for (int w : U) {
+                    inS[p ^ w] = true;
+                }
+            }
+        }
+        int ans = 0;
+        for (boolean present : inS) {
+            if (present) {
+                ans++;
+            }
+        }
+
+        return ans;
     }
 }
